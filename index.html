@@ -4,332 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel & Food Order Manager</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="ph ph-fork-knife text-3xl bg-indigo-700 p-2 rounded-xl"></i>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">Hotel & Food Order Hub</h1>
-                    <p class="text-indigo-200 text-xs">Phone & WhatsApp Order Logger (Synced with Google Sheets)</p>
+                    <h1 class="text-xl font-bold">Hotel & Food Order Hub</h1>
+                    <p class="text-indigo-200 text-xs">Direct SheetSync Active</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="fetchOrders()" id="syncBtn" class="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-lg text-sm font-medium transition">
-                    <i class="ph ph-arrows-clockwise text-lg"></i> Refresh / Sync
-                </button>
-            </div>
+            <button onclick="fetchOrders()" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-lg text-sm font-medium">
+                <i class="ph ph-arrows-clockwise"></i> Refresh
+            </button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-
-        <!-- Metrics Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+    <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-1 h-fit">
+            <h2 class="text-lg font-bold mb-4">Log New Order</h2>
+            <form id="orderForm" onsubmit="submitOrder(event)" class="space-y-4">
                 <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Orders</p>
-                    <h3 id="statTotal" class="text-2xl font-bold text-slate-700 mt-1">0</h3>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Customer Name *</label>
+                    <input type="text" id="customerName" required class="w-full px-3 py-2 border rounded-lg text-sm">
                 </div>
-                <div class="bg-blue-50 text-blue-600 p-3 rounded-xl"><i class="ph ph-receipt text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Orders</p>
-                    <h3 id="statPending" class="text-2xl font-bold text-amber-600 mt-1">0</h3>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Phone Number *</label>
+                    <input type="tel" id="phoneNumber" required class="w-full px-3 py-2 border rounded-lg text-sm">
                 </div>
-                <div class="bg-amber-50 text-amber-600 p-3 rounded-xl"><i class="ph ph-clock text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Delivered</p>
-                    <h3 id="statDelivered" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Order Source</label>
+                    <select id="orderSource" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                        <option value="Phone Call">📞 Phone Call</option>
+                        <option value="WhatsApp">💬 WhatsApp</option>
+                        <option value="Walk-in">🚶 Walk-in</option>
+                    </select>
                 </div>
-                <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl"><i class="ph ph-check-circle text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
-                    <h3 id="statRevenue" class="text-2xl font-bold text-indigo-600 mt-1">₹0</h3>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Items & Quantities *</label>
+                    <textarea id="items" rows="3" required class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
                 </div>
-                <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl"><i class="ph ph-currency-inr text-2xl"></i></div>
-            </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Delivery Time *</label>
+                        <input type="datetime-local" id="deliveryDateTime" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Amount (₹) *</label>
+                        <input type="number" id="totalAmount" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Notes</label>
+                    <input type="text" id="notes" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition">
+                    Save Order
+                </button>
+            </form>
         </div>
 
-        <!-- Order Form & List Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Order Input Form -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-1 h-fit">
-                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="ph ph-plus-circle text-indigo-600 text-xl"></i> Log New Order
-                </h2>
-                <form id="orderForm" onsubmit="submitOrder(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Customer Name *</label>
-                        <input type="text" id="customerName" required placeholder="e.g. Rajesh Kumar" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Phone Number *</label>
-                        <input type="tel" id="phoneNumber" required placeholder="e.g. 9876543210" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Order Source</label>
-                        <select id="orderSource" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="Phone Call">📞 Phone Call</option>
-                            <option value="WhatsApp">💬 WhatsApp</option>
-                            <option value="Walk-in">🚶 Walk-in</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Items & Quantities *</label>
-                        <textarea id="items" rows="3" required placeholder="2x Chicken Biryani, 1x Paneer Butter Masala" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Delivery Date & Time *</label>
-                            <input type="datetime-local" id="deliveryDateTime" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Total Amount (₹) *</label>
-                            <input type="number" id="totalAmount" required placeholder="450" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Special Instructions / Notes</label>
-                        <input type="text" id="notes" placeholder="e.g. Less spicy, extra raita" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-2">
-                        <i class="ph ph-check text-lg"></i> Save Order to Google Sheet
-                    </button>
-                </form>
+        <!-- Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
+            <h2 class="text-lg font-bold mb-4">Orders List</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b text-xs font-semibold text-slate-400 uppercase">
+                            <th class="py-3 px-2">ID</th>
+                            <th class="py-3 px-2">Customer</th>
+                            <th class="py-3 px-2">Items</th>
+                            <th class="py-3 px-2">Delivery Time</th>
+                            <th class="py-3 px-2">Amount</th>
+                            <th class="py-3 px-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody" class="divide-y text-sm">
+                        <tr><td colspan="6" class="text-center py-8 text-slate-400">Loading...</td></tr>
+                    </tbody>
+                </table>
             </div>
-
-            <!-- Orders Table & Filters -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 flex flex-col">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <i class="ph ph-list-bullets text-indigo-600 text-xl"></i> Active & Past Orders
-                    </h2>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <div class="relative w-full sm:w-64">
-                            <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
-                            <input type="text" id="searchInput" oninput="filterOrders()" placeholder="Search name or phone..." class="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <select id="statusFilter" onchange="filterOrders()" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="ALL">All Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Delivered">Delivered</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto flex-1">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                <th class="py-3 px-2">Order Info</th>
-                                <th class="py-3 px-2">Customer</th>
-                                <th class="py-3 px-2">Items</th>
-                                <th class="py-3 px-2">Delivery Time</th>
-                                <th class="py-3 px-2">Amount</th>
-                                <th class="py-3 px-2">Status</th>
-                                <th class="py-3 px-2 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ordersTableBody" class="divide-y divide-slate-50 text-sm">
-                            <tr>
-                                <td colspan="7" class="text-center py-8 text-slate-400">Loading orders from Google Sheets...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
         </div>
     </main>
 
-    <!-- JavaScript Integration -->
     <script>
-        // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW:
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz79Dm7hKl_3-EcRJQdJrbOsRpf45H9__eusxIhRNLlVT4g76eurbFZK7jNlLMNPid2/exec";
+        // 🔑 PASTE YOUR SHEETDB API URL BELOW:
+        const API_URL = "https://sheetdb.io/api/v1/YOUR_SHEETDB_ID";
 
-        let orders = [];
-
-        // Fetch Orders on Load
-        window.onload = function() {
-            fetchOrders();
-        };
+        window.onload = function() { fetchOrders(); };
 
         async function fetchOrders() {
-            const syncBtn = document.getElementById('syncBtn');
-            syncBtn.classList.add('opacity-50');
-            
-            if (GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
-                // Fallback to localStorage if URL not configured yet
-                orders = JSON.parse(localStorage.getItem('hotel_orders') || '[]');
-                renderOrders(orders);
-                syncBtn.classList.remove('opacity-50');
-                return;
-            }
-
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL);
-                const data = await response.json();
-                orders = data.map((row, index) => ({
-                    id: row["Order ID"] || `ORD-${index+1}`,
-                    timestamp: row["Timestamp"] || "",
-                    customerName: row["Customer Name"] || "",
-                    phoneNumber: row["Phone Number"] || "",
-                    orderSource: row["Order Source"] || "Phone",
-                    items: row["Items & Quantities"] || "",
-                    deliveryDateTime: row["Delivery Date/Time"] || "",
-                    totalAmount: row["Total Amount"] || 0,
-                    status: row["Status"] || "Pending",
-                    notes: row["Special Instructions"] || ""
-                }));
-                renderOrders(orders);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                // Fallback to localStorage
-                orders = JSON.parse(localStorage.getItem('hotel_orders') || '[]');
-                renderOrders(orders);
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                renderOrders(data);
+            } catch (err) {
+                console.error(err);
             }
-            syncBtn.classList.remove('opacity-50');
         }
 
         async function submitOrder(e) {
             e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> Saving...`;
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "Saving...";
+            btn.disabled = true;
 
             const newOrder = {
-                orderId: "ORD-" + Math.floor(1000 + Math.random() * 9000),
-                customerName: document.getElementById('customerName').value,
-                phoneNumber: document.getElementById('phoneNumber').value,
-                orderSource: document.getElementById('orderSource').value,
-                items: document.getElementById('items').value,
-                deliveryDateTime: document.getElementById('deliveryDateTime').value,
-                totalAmount: document.getElementById('totalAmount').value,
-                status: "Pending",
-                notes: document.getElementById('notes').value
+                "Order ID": "ORD-" + Math.floor(1000 + Math.random() * 9000),
+                "Timestamp": new Date().toLocaleString(),
+                "Customer Name": document.getElementById('customerName').value,
+                "Phone Number": document.getElementById('phoneNumber').value,
+                "Order Source": document.getElementById('orderSource').value,
+                "Items & Quantities": document.getElementById('items').value,
+                "Delivery Date/Time": document.getElementById('deliveryDateTime').value,
+                "Total Amount": document.getElementById('totalAmount').value,
+                "Status": "Pending",
+                "Special Instructions": document.getElementById('notes').value
             };
 
-            // Save locally immediately for snappy UI
-            orders.unshift(newOrder);
-            localStorage.setItem('hotel_orders', JSON.stringify(orders));
-            renderOrders(orders);
-            document.getElementById('orderForm').reset();
-
-            if (!GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
-                alert("Order saved locally! To sync with Google Sheets, add your Web App URL in the code.");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i class="ph ph-check text-lg"></i> Save Order to Google Sheet`;
-                return;
-            }
-
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newOrder)
+                    body: JSON.stringify({ data: newOrder })
                 });
-                setTimeout(fetchOrders, 1500); // Refresh list from sheet after 1.5s
-            } catch (error) {
-                console.error("Error posting data:", error);
+
+                document.getElementById('orderForm').reset();
+                alert("Order saved successfully!");
+                fetchOrders();
+            } catch (err) {
+                alert("Error saving order.");
             }
 
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="ph ph-check text-lg"></i> Save Order to Google Sheet`;
+            btn.innerText = "Save Order";
+            btn.disabled = false;
         }
 
         function renderOrders(dataList) {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = '';
-
-            let totalRev = 0;
-            let pendingCount = 0;
-            let deliveredCount = 0;
-
-            dataList.forEach(order => {
-                totalRev += Number(order.totalAmount || 0);
-                if (order.status === 'Delivered') deliveredCount++;
-                else pendingCount++;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition border-b border-slate-50";
-                tr.innerHTML = `
-                    <td class="py-3 px-2">
-                        <span class="font-semibold text-indigo-600 block text-xs">${order.id || 'ORD'}</span>
-                        <span class="text-slate-400 text-[10px]">${order.orderSource || 'Phone'}</span>
-                    </td>
-                    <td class="py-3 px-2">
-                        <span class="font-medium text-slate-800 block">${order.customerName}</span>
-                        <a href="tel:${order.phoneNumber}" class="text-slate-400 text-xs hover:text-indigo-600">${order.phoneNumber}</a>
-                    </td>
-                    <td class="py-3 px-2 max-w-xs">
-                        <p class="text-slate-700 truncate">${order.items}</p>
-                        ${order.notes ? `<span class="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Note: ${order.notes}</span>` : ''}
-                    </td>
-                    <td class="py-3 px-2 text-xs text-slate-600">
-                        ${order.deliveryDateTime ? order.deliveryDateTime.replace('T', ' ') : 'Immediate'}
-                    </td>
-                    <td class="py-3 px-2 font-semibold text-slate-700">₹${order.totalAmount}</td>
-                    <td class="py-3 px-2">
-                        <span class="px-2 py-1 text-xs rounded-full font-medium ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}">
-                            ${order.status || 'Pending'}
-                        </span>
-                    </td>
-                    <td class="py-3 px-2 text-right space-x-1">
-                        <button onclick="toggleStatus('${order.id}')" title="Toggle Status" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition">
-                            <i class="ph ph-arrow-clockwise text-sm"></i>
-                        </button>
-                    </td>
+            
+            dataList.reverse().forEach(order => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="py-3 px-2 text-indigo-600 font-semibold">${order["Order ID"] || 'ORD'}</td>
+                        <td class="py-3 px-2">${order["Customer Name"]} <br><span class="text-xs text-slate-400">${order["Phone Number"]}</span></td>
+                        <td class="py-3 px-2">${order["Items & Quantities"]}</td>
+                        <td class="py-3 px-2 text-xs">${order["Delivery Date/Time"]}</td>
+                        <td class="py-3 px-2 font-semibold">₹${order["Total Amount"]}</td>
+                        <td class="py-3 px-2"><span class="bg-amber-50 text-amber-600 px-2 py-1 rounded text-xs">${order["Status"] || 'Pending'}</span></td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
             });
 
             if (dataList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">No orders found.</td></tr>`;
-            }
-
-            // Update Metrics
-            document.getElementById('statTotal').innerText = dataList.length;
-            document.getElementById('statPending').innerText = pendingCount;
-            document.getElementById('statDelivered').innerText = deliveredCount;
-            document.getElementById('statRevenue').innerText = '₹' + totalRev.toLocaleString();
-        }
-
-        function filterOrders() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value;
-
-            const filtered = orders.filter(o => {
-                const matchesQuery = (o.customerName && o.customerName.toLowerCase().includes(query)) || 
-                                     (o.phoneNumber && o.phoneNumber.includes(query)) ||
-                                     (o.items && o.items.toLowerCase().includes(query));
-                const matchesStatus = (status === 'ALL' || o.status === status);
-                return matchesQuery && matchesStatus;
-            });
-
-            renderOrders(filtered);
-        }
-
-        function toggleStatus(id) {
-            const order = orders.find(o => o.id === id);
-            if (order) {
-                order.status = order.status === 'Delivered' ? 'Pending' : 'Delivered';
-                localStorage.setItem('hotel_orders', JSON.stringify(orders));
-                renderOrders(orders);
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">No orders found.</td></tr>`;
             }
         }
     </script>
